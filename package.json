@@ -1,0 +1,20 @@
+{
+  "name": "theo_luthin_aurelien_albert_projet_js_forum",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/theoluthin2903/Theo_LUTHIN_Aurelien_Albert_Projet_JS_Forum#readme",
+  "bugs": {
+    "url": "https://github.com/theoluthin2903/Theo_LUTHIN_Aurelien_Albert_Projet_JS_Forum/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theoluthin2903/Theo_LUTHIN_Aurelien_Albert_Projet_JS_Forum.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
