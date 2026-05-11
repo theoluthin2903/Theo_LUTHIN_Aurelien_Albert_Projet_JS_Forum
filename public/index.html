@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Forum - Bienvenue</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Projet Forum</h1>
+        
+        <section id="login-box">
+            <h2>Connexion</h2>
+            <form id="login-form">
+                <input type="text" id="login-id" placeholder="Pseudo ou Email" required>
+                <input type="password" id="login-pass" placeholder="Mot de passe" required>
+                <button type="submit">Se connecter</button>
+            </form>
+            <div>
+                <p>Pas encore de compte ? <a href="#" id="show-register">S'inscrire</a></p>
+                <p><a href="forum.html" id="show-forum">Aller sur le Forum sans se connecter</a></p>
+            </div>
+        </section>
+
+        <section id="register-box" class="hidden">
+            <h2>Inscription</h2>
+            <form id="register-form">
+                <input type="text" id="reg-username" placeholder="Pseudo (lettres et chiffres)" required pattern="^[a-zA-Z0-9]+$">
+                <input type="email" id="reg-email" placeholder="Adresse mail" required>
+                <input type="password" id="reg-password" placeholder="Mot de passe" required>
+                <small>8+ caractères, 1 majuscule, 1 caractère spécial.</small>
+                <button type="submit">Créer mon compte</button>
+            </form>
+            <p>Déjà inscrit ? <a href="#" id="show-login">Se connecter</a></p>
+        </section>
+    </div>
+    <script src="js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Forum - Discussions</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo" onclick="location.reload()">Ynov Forum</div>
+        <div class="search-area">
+            <input type="text" id="search-input" placeholder="Rechercher un topic (titre ou tag)...">
+        </div>
+
+        <nav>
+            <button id="btn-create-topic"> + Créer Topic</button>
+            <button id="btn-admin-dashboard" class="hidden">Admin</button>
+            <button id="btn-logout">Déconnexion</button>
+        </nav>
+    </header>
+
+    <main id="app-container">
+        <section id="view-home">
+            <div class="filters">
+                <select id="filter-tag"><option value="">Toutes les catégories</option></select>
+                <select id="sort-order">
+                    <option value="newest">Plus récent (par défaut)</option>
+                    <option value="popular">Plus populaire</option>
+                </select>
+            </div>
+
+            <div id="topics-list">
+            </div>
+
+            <div class="pagination">
+                <span>Afficher :</span>
+                <select id="page-size">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="all">Totalité</option>
+                </select>
+            </div>
+        </section>
+
+        <section id="view-create-topic" class="hidden">
+            <h2>Créer un nouveau sujet</h2>
+            <form id="create-topic-form">
+                <input type="text" id="topic-title" placeholder="Titre" required>
+                <textarea id="topic-body" placeholder="Corps du message" required></textarea>
+                <input type="text" id="topic-tags" placeholder="Tags (ex: tech, ynov, aide)">
+                <button type="submit">Publier le topic</button>
+                <button type="button" class="btn-cancel">Annuler</button>
+            </form>
+        </section>
+
+        <section id="view-topic-detail" class="hidden">
+            <div id="topic-content"></div>
+            <hr>
+            <div id="messages-list"></div>
+            <form id="add-message-form">
+                <textarea id="msg-body" placeholder="Votre réponse..." required></textarea>
+                <button type="submit">Envoyer le message</button>
+            </form>
+        </section>
+
+        <section id="view-admin" class="hidden">
+            <h2>Dashboard Administrateur</h2>
+            <div id="admin-controls">
+            </div>
+        </section>
+    </main>
+
+    <script src="js/forum.js"></script>
+</body>
+</html>
