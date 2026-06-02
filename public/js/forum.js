@@ -31,3 +31,23 @@ function renderTopicDetail(topic) {
     `;
     showView('view-topic-detail');
 }
+
+async function loadTopics() {
+    const response = await fetch('/api/topics');
+    const topics = await response.json();
+    
+    const container = document.getElementById('topics-list');
+    container.innerHTML = ''; // On vide avant d'ajouter
+
+    topics.forEach(topic => {
+        const div = document.createElement('div');
+        div.className = 'topic-item';
+        div.innerHTML = `
+            <h3>${topic.title}</h3>
+            <p>Par ${topic.author} - ${new Date(topic.createdAt).toLocaleDateString()}</p>
+            <span class="tag">${topic.tag}</span>
+        `;
+        div.onclick = () => loadOneTopic(topic.id); // FT-4: Consulter un topic
+        container.appendChild(div);
+    });
+}
