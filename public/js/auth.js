@@ -1,103 +1,69 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- 1. Gestion de l'affichage (Toggle entre Login et Register) ---
+    // --- Navigation entre formulaires ---
     const loginBox = document.getElementById('login-box');
     const registerBox = document.getElementById('register-box');
-    const showRegisterLink = document.getElementById('show-register');
-    const showLoginLink = document.getElementById('show-login');
-
-    showRegisterLink.addEventListener('click', (e) => {
-        e.preventDefault();
+    
+    document.getElementById('show-register').onclick = () => {
         loginBox.classList.add('hidden');
         registerBox.classList.remove('hidden');
-    });
+    };
 
-    showLoginLink.addEventListener('click', (e) => {
-        e.preventDefault();
+    document.getElementById('show-login').onclick = () => {
         registerBox.classList.add('hidden');
         loginBox.classList.remove('hidden');
-    });
+    };
 
-    // --- 2. FT-1 : INSCRIPTION ---
-    const registerForm = document.getElementById('register-form');
-
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Empêche le rechargement de la page
+    // --- FT-1 : INSCRIPTION (Simulation) ---
+    document.getElementById('register-form').onsubmit = (e) => {
+        e.preventDefault();
 
         const username = document.getElementById('reg-username').value;
         const email = document.getElementById('reg-email').value;
         const password = document.getElementById('reg-password').value;
 
-        // Validation du mot de passe (FT-1 : 8 car., 1 maj, 1 car. spécial)
-        const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-        
-        if (!passwordRegex.test(password)) {
-            alert("Erreur : Le mot de passe doit faire au moins 8 caractères, contenir une majuscule et un caractère spécial.");
+        // Validation (FT-1)
+        const regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/;
+        if (!regex.test(password)) {
+            alert("Le mot de passe doit contenir au moins 8 caractères, 1 majuscule et 1 spécial.");
             return;
         }
 
-        const userData = {
-            username: username,
-            email: email,
-            password: password
-        };
-
-        try {
-            // Remplacer '/api/register' par l'URL du serveur (ex: 'http://localhost:8080/register')
-            const response = await fetch('/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            });
-
-            if (response.ok) {
-                alert("Inscription réussie ! Connectez-vous.");
-                showLoginLink.click(); // Bascule sur la connexion
-            } else {
-                const error = await response.json();
-                alert("Erreur : " + error.message);
-            }
-        } catch (err) {
-            console.error("Erreur réseau :", err);
-            alert("Le serveur ne répond pas.");
+        // On simule une base de données avec localStorage
+        const users = JSON.parse(localStorage.getItem('users') || "[]");
+        
+        // Vérifier si l'utilisateur existe déjà
+        if (users.find(u => u.username === username || u.email === email)) {
+            alert("Pseudo ou Email déjà utilisé !");
+            return;
         }
-    });
 
-    // --- 3. FT-2 : CONNEXION ---
-    const loginForm = document.getElementById('login-form');
+        // Enregistrement
+        users.push({ username, email, password, role: 'user' });
+        localStorage.setItem('users', JSON.stringify(users));
 
-    loginForm.addEventListener('submit', async (e) => {
+        alert("Inscription réussie ! Connectez-vous maintenant.");
+        document.getElementById('show-login').click();
+    };
+
+    // --- FT-2 : CONNEXION (Simulation) ---
+    document.getElementById('login-form').onsubmit = (e) => {
         e.preventDefault();
 
-        const identifier = document.getElementById('login-id').value;
-        const password = document.getElementById('login-pass').value;
+        const id = document.getElementById('login-id').value;
+        const pass = document.getElementById('login-pass').value;
 
-        const loginData = {
-            identifier: identifier, // Peut être pseudo ou email
-            password: password
-        };
+        const users = JSON.parse(localStorage.getItem('users') || "[]");
+        
+        // On cherche l'utilisateur (par pseudo ou email)
+        const user = users.find(u => (u.username === id || u.email === id) && u.password === pass);
 
-        try {
-            // Remplacer '/api/login' par l' URL du serveur
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(loginData)
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                
-                // On stocke le token ou l'info utilisateur (très important pour le forum)
-                localStorage.setItem('user', JSON.stringify(data.user)); 
-                
-                // Redirection vers le forum
-                window.location.href = 'forum.html';
-            } else {
-                alert("Identifiants incorrects.");
-            }
-        } catch (err) {
-            console.error("Erreur réseau :", err);
-            alert("Erreur de connexion au serveur.");
+        if (user) {
+            // On sauvegarde qui est connecté pour le forum.html
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            alert("Connexion réussie ! Bienvenue " + user.username);
+            window.location.href = 'forum.html'; // Redirection
+        } else {
+            alert("Identifiant ou mot de passe incorrect.");
         }
-    }); 
+    };
 });

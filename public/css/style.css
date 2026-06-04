@@ -1,81 +1,203 @@
-body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0; 
-    background: #f0f2f5;
+/* --- VARIABLES ET RESET --- */
+:root {
+    --primary-color: #004a99;    /* Bleu Ynov */
+    --secondary-color: #00c2cb;  /* Turquoise Ynov */
+    --bg-color: #f4f7f9;
+    --text-color: #333;
+    --white: #ffffff;
+    --error: #e74c3c;
+    --success: #2ecc71;
+    --border-radius: 8px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.hidden { 
-    display: none; 
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-header { 
-    background: #004a99; 
-    color: white; 
-    padding: 10px 50px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
 }
 
-main { 
-    max-width: 1100px; 
-    margin: 20px auto; 
-    background: white; 
-    padding: 20px; 
-    border-radius: 8px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+.hidden {
+    display: none !important;
 }
 
-.auth-container { 
-    width: 350px; 
-    margin: 100px auto; 
-    background: white; 
-    padding: 30px; 
-    border-radius: 10px; 
-    text-align: center; 
+/* --- HEADER --- */
+header {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-input, textarea, select { 
-    width: 100%; 
-    padding: 10px; 
-    margin: 10px 0; 
-    border: 1px solid #ddd; 
-    border-radius: 5px; 
+header .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 1px;
 }
 
-.topic-item { 
-    border-bottom: 1px solid #eee; 
-    padding: 15px; 
-    cursor: pointer; 
-    transition: 0.2s; 
+header nav {
+    display: flex;
+    gap: 15px;
 }
 
-.topic-item:hover { 
-    background: #f9f9f9; 
+.search-area input {
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: none;
+    width: 300px;
+    outline: none;
 }
 
-.tag { 
-    background: #e1ecf4; 
-    color: #39739d; 
-    padding: 3px 8px; 
-    border-radius: 3px; 
-    font-size: 12px; 
+/* --- BOUTONS --- */
+button {
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-#view-admin { 
-    border: 2px solid red; 
-    padding: 20px; 
+button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
 }
 
-button { 
-    cursor: pointer; 
-    background: #004a99; 
-    color: white; 
-    border: none; 
-    padding: 10px 15px; 
-    border-radius: 5px; 
+#btn-create-topic { background-color: var(--secondary-color); color: white; }
+#btn-logout { background-color: transparent; border: 1px solid white; color: white; }
+#btn-admin-dashboard { background-color: #f39c12; color: white; }
+
+/* --- AUTHENTIFICATION (index.html) --- */
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 80px auto;
+    background: var(--white);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
 }
 
-button:hover { 
-    opacity: 0.8; 
+.auth-container h1 { color: var(--primary-color); margin-bottom: 20px; }
+.auth-container h2 { margin-bottom: 20px; font-size: 1.2rem; color: #666; }
+
+input, textarea, select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+input:focus { border-color: var(--secondary-color); outline: none; }
+
+.auth-container p { margin-top: 20px; font-size: 0.9rem; }
+.auth-container a { color: var(--secondary-color); text-decoration: none; font-weight: bold; }
+
+/* --- CONTENU PRINCIPAL (forum.html) --- */
+main {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+section {
+    background: var(--white);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+/* LISTE DES TOPICS (FT-10) */
+.filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    background: #eee;
+    padding: 10px;
+    border-radius: var(--border-radius);
+}
+
+.topic-item {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.topic-item:hover { background-color: #f9f9f9; }
+
+.topic-info h3 { color: var(--primary-color); margin-bottom: 5px; cursor: pointer; }
+.topic-info h3:hover { text-decoration: underline; }
+
+.tag {
+    background: #e1ecf4;
+    color: #39739d;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* MESSAGES ET LIKES (FT-5, FT-7) */
+.message {
+    background: #f8f9fa;
+    padding: 15px;
+    margin: 15px 0;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 4px;
+}
+
+.votes {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-like { color: var(--success); background: none; border: 1px solid var(--success); padding: 5px 10px; }
+.btn-dislike { color: var(--error); background: none; border: 1px solid var(--error); padding: 5px 10px; }
+
+/* PAGINATION (FT-9) */
+.pagination {
+    margin-top: 30px;
+    text-align: center;
+    padding: 20px;
+}
+
+.pagination select { width: auto; display: inline-block; margin-left: 10px; }
+
+/* DASHBOARD ADMIN (FT-11) */
+#view-admin h2 { color: var(--error); margin-bottom: 20px; }
+.admin-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.btn-delete { background-color: var(--error); color: white; padding: 5px 10px; font-size: 0.8rem; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    header { flex-direction: column; gap: 15px; }
+    .search-area input { width: 100%; }
+    .topic-item { flex-direction: column; align-items: flex-start; gap: 10px; }
 }
