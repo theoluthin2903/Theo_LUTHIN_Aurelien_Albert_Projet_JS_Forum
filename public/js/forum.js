@@ -1,49 +1,127 @@
+// ==========================================
+// 1. FONCTIONS GLOBALES (Accessibles par le HTML)
+// ==========================================
+
+// Navigation entre les vues (FT-4)
+function showView(viewId) {
+    console.log("Navigation vers : " + viewId);
+    
+    // On cache toutes les sections
+    document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+    
+    // On affiche la section demandée
+    const target = document.getElementById(viewId);
+    if (target) target.classList.remove('hidden');
+
+    // Actions spécifiques au chargement de la vue
+    if (viewId === 'view-home') {
+        renderTopics(); // On rafraîchit la liste
+    }
+    if (viewId === 'view-admin') {
+        renderAdmin(); // On rafraîchit le dashboard admin
+    }
+}
+
+// Voir le détail d'un topic (FT-4)
+function viewTopicDetail(id) {
+    const topics = JSON.parse(localStorage.getItem('topics') || "[]");
+    const topic = topics.find(t => t.id === id);
+
+    if (topic) {
+        const detailZone = document.getElementById('topic-detail-content');
+        detailZone.innerHTML = `
+            <div class="topic-header-detail">
+                <h2>${topic.title}</h2>
+                <span class="tag">${topic.tag}</span>
+            </div>
+            <div class="message main-post">
+                <p>${topic.body}</p>
+                <div class="message-meta">
+                    Posté par <strong>${topic.author}</strong> le ${new Date(topic.date).toLocaleDateString()}
+                </div>
+            </div>
+            <div class="votes">
+                <button onclick="handleVote(${topic.id}, 'like')" class="btn-vote">👍 Like (${topic.likes || 0})</button>
+                <button onclick="handleVote(${topic.id}, 'dislike')" class="btn-vote">👎 Dislike</button>
+            </div>
+        `;
+        showView('view-topic-detail');
+    }
+}
+
+// Fonction pour les likes (FT-7)
+function handleVote(topicId, type) {
+    let topics = JSON.parse(localStorage.getItem('topics') || "[]");
+    const index = topics.findIndex(t => t.id === topicId);
+    
+    if (index !== -1) {
+        if (type === 'like') topics[index].likes = (topics[index].likes || 0) + 1;
+        if (type === 'dislike') topics[index].likes = (topics[index].likes || 0) - 1;
+        
+        localStorage.setItem('topics', JSON.stringify(topics));
+        viewTopicDetail(topicId); // Rafraîchir la vue détail
+        showToast("Vote pris en compte !");
+    }
+}
+
+// Suppression Admin (FT-11)
+function deleteTopic(id) {
+    if (confirm("Supprimer ce sujet définitivement ?")) {
+        let topics = JSON.parse(localStorage.getItem('topics') || "[]");
+        topics = topics.filter(t => t.id !== id);
+        localStorage.setItem('topics', JSON.stringify(topics));
+        renderAdmin();
+        showToast("Topic supprimé.");
+    }
+}
+
+// Notification Toast
+function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    document.getElementById('toast-container').appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+
+// ==========================================
+// 2. LOGIQUE AU CHARGEMENT DU DOCUMENT
+// ==========================================
+
 document.addEventListener('DOMContentLoaded', () => {
-    // --- SECURITÉ & AUTH ---
+    
+    // --- SÉCURITÉ ---
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) {
         window.location.href = 'index.html';
         return;
     }
     document.getElementById('user-welcome').textContent = `Salut, ${currentUser.username}`;
-    if (currentUser.role === 'admin') document.getElementById('btn-admin-dashboard').classList.remove('hidden');
-
-    // --- INITIALISATION DONNÉES (Simulées pour le front) ---
-    if (!localStorage.getItem('topics')) {
-        const fakeTopics = [
-            { id: 1, title: "Bienvenue sur Ynov Forum", body: "Premier post !", author: "Admin", tag: "tech", date: new Date().toISOString(), status: "ouvert", likes: 10 },
-            { id: 2, title: "Besoin d'aide en Go", body: "Comment faire un serveur ?", author: "Alice", tag: "aide", date: new Date().toISOString(), status: "ouvert", likes: 2 }
-        ];
-        localStorage.setItem('topics', JSON.stringify(fakeTopics));
+    if (currentUser.role === 'admin') {
+        document.getElementById('btn-admin-dashboard').classList.remove('hidden');
     }
 
-    // --- NAVIGATION ---
-    function showView(viewId) {
-        document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
-        document.getElementById(viewId).classList.remove('hidden');
-        if (viewId === 'view-home') renderTopics();
-        if (viewId === 'view-admin') renderAdmin();
-    }
 
-    // --- FT-12 & FT-10 : AFFICHAGE & FILTRES ---
+    // --- FONCTION DE RENDU DE LA LISTE (FT-10, 12, 9) ---
     function renderTopics() {
         let topics = JSON.parse(localStorage.getItem('topics') || "[]");
-        const searchQuery = document.getElementById('search-input').value.toLowerCase();
-        const tagFilter = document.getElementById('filter-tag').value;
-        const sortOrder = document.getElementById('sort-order').value;
-        const pageSize = document.getElementById('page-size').value;
-
-        // Filtrage recherche (Titre ou Tag)
-        topics = topics.filter(t => t.title.toLowerCase().includes(searchQuery) || t.tag.toLowerCase().includes(searchQuery));
         
-        // Filtrage catégorie
+        // Filtre Recherche
+        const query = document.getElementById('search-input').value.toLowerCase();
+        topics = topics.filter(t => t.title.toLowerCase().includes(query) || t.tag.toLowerCase().includes(query));
+
+        // Filtre Catégorie
+        const tagFilter = document.getElementById('filter-tag').value;
         if (tagFilter) topics = topics.filter(t => t.tag === tagFilter);
 
         // Tri
-        if (sortOrder === 'newest') topics.sort((a, b) => new Date(b.date) - new Date(a.date));
-        if (sortOrder === 'popular') topics.sort((a, b) => b.likes - a.likes);
+        const sort = document.getElementById('sort-order').value;
+        if (sort === 'newest') topics.sort((a, b) => new Date(b.date) - new Date(a.date));
+        if (sort === 'popular') topics.sort((a, b) => b.likes - a.likes);
 
         // Pagination (FT-9)
+        const pageSize = document.getElementById('page-size').value;
         if (pageSize !== 'all') topics = topics.slice(0, parseInt(pageSize));
 
         const list = document.getElementById('topics-list');
@@ -55,13 +133,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="topic-meta">
                     <span class="tag">${t.tag}</span>
-                    <span>👍 ${t.likes}</span>
+                    <span>👍 ${t.likes || 0}</span>
                 </div>
             </div>
         `).join('');
     }
 
-    // --- FT-3 : CRÉATION TOPIC ---
+    // --- FONCTION RENDU ADMIN ---
+    window.renderAdmin = () => {
+        const topics = JSON.parse(localStorage.getItem('topics') || "[]");
+        const adminZone = document.getElementById('admin-topics-list');
+        adminZone.innerHTML = topics.map(t => `
+            <div class="admin-row">
+                <span>${t.title}</span>
+                <button onclick="deleteTopic(${t.id})" class="btn-delete">Supprimer</button>
+            </div>
+        `).join('');
+    };
+
+    // --- ÉCOUTEURS D'ÉVÉNEMENTS (LISTENERS) ---
+
+    // Bouton de déconnexion
+    document.getElementById('btn-logout').onclick = () => {
+        localStorage.removeItem('currentUser');
+        window.location.href = 'index.html';
+    };
+
+    // Boutons Retour et Annuler
+    document.querySelectorAll('.btn-cancel').forEach(btn => {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            showView('view-home');
+        };
+    });
+
+    // Navigation Header
+    document.getElementById('btn-create-topic-nav').onclick = () => showView('view-create-topic');
+    document.getElementById('btn-admin-dashboard').onclick = () => showView('view-admin');
+
+    // Filtres et Recherche (Temps réel)
+    document.getElementById('search-input').oninput = renderTopics;
+    document.getElementById('filter-tag').onchange = renderTopics;
+    document.getElementById('sort-order').onchange = renderTopics;
+    document.getElementById('page-size').onchange = renderTopics;
+
+    // Formulaire de création (FT-3)
     document.getElementById('create-topic-form').onsubmit = (e) => {
         e.preventDefault();
         const topics = JSON.parse(localStorage.getItem('topics') || "[]");
@@ -77,55 +193,13 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         topics.push(newTopic);
         localStorage.setItem('topics', JSON.stringify(topics));
-        showToast("Sujet publié !");
+        
+        document.getElementById('create-topic-form').reset();
+        showToast("Topic créé avec succès !");
         showView('view-home');
     };
 
-    // --- FT-4 & FT-5 : DÉTAIL & MESSAGES ---
-    window.viewTopicDetail = (id) => {
-        const topic = JSON.parse(localStorage.getItem('topics')).find(t => t.id === id);
-        const detailZone = document.getElementById('topic-detail-content');
-        detailZone.innerHTML = `
-            <h2>${topic.title}</h2>
-            <p class="topic-body-text">${topic.body}</p>
-            <small>Posté par ${topic.author} • État : ${topic.status}</small>
-            <div class="votes">
-                <button onclick="handleLike(${topic.id}, 'like')">👍 Like</button>
-                <button onclick="handleLike(${topic.id}, 'dislike')">👎 Dislike</button>
-            </div>
-        `;
-        showView('view-topic-detail');
-    };
-
-    // --- FT-11 : ADMIN DASHBOARD ---
-    function renderAdmin() {
-        const topics = JSON.parse(localStorage.getItem('topics') || "[]");
-        const users = JSON.parse(localStorage.getItem('users') || "[]");
-
-        document.getElementById('admin-topics-list').innerHTML = topics.map(t => `
-            <div class="admin-row">
-                <span>${t.title}</span>
-                <button onclick="deleteTopic(${t.id})" class="btn-delete">Supprimer</button>
-            </div>
-        `).join('');
-
-        document.getElementById('admin-users-list').innerHTML = users.map(u => `
-            <div class="admin-row">
-                <span>${u.username}</span>
-                <button onclick="banUser('${u.username}')" class="btn-delete">Bannir</button>
-            </div>
-        `).join('');
-    }
-
-    window.deleteTopic = (id) => {
-        let topics = JSON.parse(localStorage.getItem('topics'));
-        topics = topics.filter(t => t.id !== id);
-        localStorage.setItem('topics', JSON.stringify(topics));
-        renderAdmin();
-        showToast("Topic supprimé.");
-    };
-
-    // --- GESTION THÈME ---
+    // Thème Sombre/Clair
     const themeBtn = document.getElementById('theme-toggle');
     themeBtn.onclick = () => {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -134,26 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('theme', isDark ? 'light' : 'dark');
     };
 
-    // --- UTILS ---
-    function showToast(msg) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = msg;
-        document.getElementById('toast-container').appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    // --- LISTENERS ---
-    document.getElementById('btn-create-topic-nav').onclick = () => showView('view-create-topic');
-    document.getElementById('btn-admin-dashboard').onclick = () => showView('view-admin');
-    document.getElementById('search-input').oninput = renderTopics;
-    document.getElementById('filter-tag').onchange = renderTopics;
-    document.getElementById('page-size').onchange = renderTopics;
-    document.getElementById('btn-logout').onclick = () => {
-        localStorage.removeItem('currentUser');
-        window.location.href = 'index.html';
-    };
-    document.querySelector('.btn-cancel').onclick = () => showView('view-home');
-
+    // Premier rendu au chargement
     renderTopics();
 });

@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Ynov Forum - Discussions</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -65,7 +71,7 @@
         </section>
 
         <section id="view-topic-detail" class="hidden">
-            <button class="btn-cancel" href="forum.html">← Retour</button>
+            <button class="btn-cancel">← Retour</button>
             <div id="topic-detail-content"></div>
             <hr>
             <h3>Réponses</h3>

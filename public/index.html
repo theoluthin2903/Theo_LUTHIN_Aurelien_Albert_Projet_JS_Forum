@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Forum - Bienvenue</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
