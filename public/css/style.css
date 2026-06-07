@@ -152,3 +152,21 @@ input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px 
     .search-area input { width: 150px; }
     .topic-item { flex-direction: column; align-items: flex-start; }
 }
+
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+.toast {
+    background: var(--bg-card);
+    color: var(--text-main);
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    border-left: 5px solid var(--accent);
+    margin-top: 10px;
+    animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
