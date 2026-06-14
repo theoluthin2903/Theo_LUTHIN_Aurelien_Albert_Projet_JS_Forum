@@ -55,7 +55,7 @@ Une application de forum moderne et intuitive développée en **JavaScript vanil
 
 ### 1. Cloner/Télécharger le projet
 ```bash
-git clone <url-du-repo>
+git clone https://github.com/theoluthin2903/Theo_LUTHIN_Aurelien_Albert_Projet_JS_Forum
 cd Theo_LUTHIN_Aurelien_Albert_Projet_JS_Forum
 ```
 
