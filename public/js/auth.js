@@ -46,11 +46,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- FT-2 : CONNEXION (Simulation) ---
+    const loginPassInput = document.getElementById('login-pass');
+    const passwordToggle = document.getElementById('toggle-password-visibility');
+
+    passwordToggle.addEventListener('click', () => {
+        const isHidden = loginPassInput.type === 'password';
+        loginPassInput.type = isHidden ? 'text' : 'password';
+        passwordToggle.textContent = isHidden ? '🙈' : '👁️';
+    });
+
     document.getElementById('login-form').onsubmit = (e) => {
         e.preventDefault();
 
         const id = document.getElementById('login-id').value;
-        const pass = document.getElementById('login-pass').value;
+        const pass = loginPassInput.value;
 
         const users = JSON.parse(localStorage.getItem('users') || "[]");
         

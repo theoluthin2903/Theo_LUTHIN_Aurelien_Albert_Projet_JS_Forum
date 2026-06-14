@@ -23,7 +23,10 @@
             <h2>Connexion</h2>
             <form id="login-form">
                 <input type="text" id="login-id" placeholder="Pseudo ou Email" required>
-                <input type="password" id="login-pass" placeholder="Mot de passe" required>
+                <div class="password-field">
+                    <input type="password" id="login-pass" placeholder="Mot de passe" required>
+                    <button type="button" id="toggle-password-visibility" aria-label="Afficher ou masquer le mot de passe">👁️</button>
+                </div>
                 <button type="submit">Se connecter</button>
             </form>
             <div>
