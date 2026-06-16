@@ -43,7 +43,7 @@ function saveTopics(topics) {
     localStorage.setItem('topics', JSON.stringify(topics));
 }
 
-// Filtrer les topics : on cache les sujets des gens qui nous ont banni
+// Filtrer les topics visibles (exclure ceux des auteurs qui nous ont banni)
 function getVisibleTopics() {
     const currentUser = getCurrentUser();
     const allTopics = getStoredTopics().filter(t => !t.fake && t.title && t.author);
@@ -57,15 +57,12 @@ function getVisibleTopics() {
     });
 }
 
-// --- FONCTION : BANNISEMENT + SUPPRESSION DES MESSAGES ---
+// --- FONCTION : BANNISEMENT ---
 function banUser(targetUsername) {
     const currentUser = getCurrentUser();
     if (!currentUser || targetUsername === currentUser.username) return;
 
-    const confirmMsg = `Bannir ${targetUsername} ?\n\nSes messages sur TOUS vos sujets seront supprimés et il ne pourra plus consulter votre contenu.`;
-    
-    if (confirm(confirmMsg)) {
-        // 1. Ajouter à la liste noire
+    if (confirm(`Bannir ${targetUsername} ? Ses messages sur vos sujets seront supprimés.`)) {
         const bans = getBans();
         if (!bans[currentUser.username]) bans[currentUser.username] = [];
         if (!bans[currentUser.username].includes(targetUsername)) {
@@ -73,32 +70,21 @@ function banUser(targetUsername) {
             saveBans(bans);
         }
 
-        // 2. Supprimer TOUS les messages de cet utilisateur sur les topics du propriétaire
         const topics = getStoredTopics();
-        let countDeleted = 0;
-
         topics.forEach(topic => {
             if (topic.author === currentUser.username) {
-                const initialCount = topic.messages.length;
-                // On garde seulement les messages qui ne sont pas de l'utilisateur banni
                 topic.messages = topic.messages.filter(m => m.author !== targetUsername);
-                countDeleted += (initialCount - topic.messages.length);
             }
         });
 
         saveTopics(topics);
-        showToast(`${targetUsername} banni. ${countDeleted} message(s) supprimé(s).`);
-        
-        // 3. Rafraîchir l'affichage
-        if (currentTopicId) {
-            const currentTopic = topics.find(t => t.id === currentTopicId);
-            if (currentTopic) renderMessages(currentTopic);
-        }
+        showToast(`${targetUsername} banni.`);
         renderTopics();
+        if (currentTopicId) viewTopicDetail(currentTopicId);
     }
 }
 
-// --- FONCTION : FILTRE DYNAMIQUE PAR CATÉGORIE (SPLIT MULTI-TAGS) ---
+// --- FONCTION : CATÉGORIES DYNAMIQUES ---
 function updateTagFilter() {
     const select = document.getElementById('filter-tag');
     if (!select) return;
@@ -124,17 +110,47 @@ function updateTagFilter() {
     if (uniqueTags.includes(currentSelection)) select.value = currentSelection;
 }
 
-function setTopicState(id, state) {
-    const currentUser = getCurrentUser();
-    const topics = getStoredTopics();
-    const index = topics.findIndex(t => t.id === id);
-    if (index === -1 || !currentUser) return;
-    if (currentUser.role !== 'admin' && topics[index].author !== currentUser.username) return;
+// --- RENDU DE LA LISTE (AVEC PAGINATION CORRIGÉE) ---
+window.renderTopics = function() {
+    let topics = getVisibleTopics();
+    const query = document.getElementById('search-input').value.toLowerCase();
+    const tagFilter = document.getElementById('filter-tag').value;
+    const sort = document.getElementById('sort-order').value;
+    const pageSize = document.getElementById('page-size').value; // RECUPERATION PAGINATION
 
-    topics[index].state = state;
-    saveTopics(topics);
-    viewTopicDetail(id);
-}
+    // 1. Filtre Recherche & Tags
+    topics = topics.filter(t => t.title.toLowerCase().includes(query) || (t.tag && t.tag.toLowerCase().includes(query)));
+    
+    // 2. Filtre Catégorie exacte
+    if (tagFilter) {
+        topics = topics.filter(t => t.tag && t.tag.split(',').map(s => s.trim()).includes(tagFilter));
+    }
+    
+    // 3. Tri
+    if (sort === 'newest') topics.sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (sort === 'popular') topics.sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
+
+    // 4. PAGINATION (Le "Slice")
+    if (pageSize !== 'all') {
+        topics = topics.slice(0, parseInt(pageSize));
+    }
+
+    const list = document.getElementById('topics-list');
+    list.innerHTML = topics.map(t => `
+        <div class="topic-item" onclick="viewTopicDetail(${t.id})">
+            <div class="topic-info">
+                <h3>${t.title}</h3>
+                <p>Par ${t.author} • ${new Date(t.date).toLocaleDateString()}</p>
+            </div>
+            <div class="topic-meta">
+                <span class="tag">${t.tag || 'Général'}</span>
+                <span class="state-badge ${t.state}">${t.state}</span>
+                <span>👍 ${t.likes}</span>
+                <span>👎 ${t.dislikes}</span>
+            </div>
+        </div>
+    `).join('');
+};
 
 function viewTopicDetail(id) {
     const topics = getVisibleTopics();
@@ -142,7 +158,6 @@ function viewTopicDetail(id) {
     const currentUser = getCurrentUser();
 
     if (!topic) {
-        showToast("Accès refusé ou sujet inexistant.");
         showView('view-home');
         return;
     }
@@ -177,7 +192,6 @@ function viewTopicDetail(id) {
                 <button onclick="setTopicState(${topic.id}, 'archivé')" class="btn-delete">Archiver</button>
             </div>
         ` : ''}
-        <div id="topic-state-note" class="topic-state-note"></div>
         <h3>Réponses</h3>
         <div id="messages-list"></div>
     `;
@@ -195,14 +209,13 @@ function renderMessages(topic) {
             const isOwner = currentUser && topic.author === currentUser.username;
             const isMsgAuthor = currentUser && m.author === currentUser.username;
             const isAdmin = currentUser && currentUser.role === 'admin';
-
             const deleteBtn = (isMsgAuthor || isOwner || isAdmin) ? `<button onclick="deleteMessage(${i})" class="btn-delete-message">🗑️</button>` : '';
-            const banBtn = (isOwner && !isMsgAuthor) ? `<button onclick="banUser('${m.author}')" class="btn-delete-message" title="Bannir et nettoyer">🚫 Bannir</button>` : '';
+            const banBtn = (isOwner && !isMsgAuthor) ? `<button onclick="banUser('${m.author}')" class="btn-delete-message">🚫 Ban</button>` : '';
 
             return `
                 <div class="message">
                     <div class="message-meta">
-                        <strong>${m.author}</strong> le ${new Date(m.date).toLocaleDateString()}
+                        <strong>${m.author}</strong>
                         <div class="msg-actions">${banBtn} ${deleteBtn}</div>
                     </div>
                     <p>${m.body}</p>
@@ -217,11 +230,11 @@ function renderMessages(topic) {
 
 function handleVote(topicId, type) {
     const currentUser = getCurrentUser();
-    if (!currentUser) return showToast("Connectez-vous.");
+    if (!currentUser) return;
     const topics = getStoredTopics();
     const t = topics.find(topic => topic.id === topicId);
-    if (!t || !t.userVotes) return;
-    
+    if (!t) return;
+    if (!t.userVotes) t.userVotes = {};
     const oldVote = t.userVotes[currentUser.username];
     if (oldVote === type) {
         delete t.userVotes[currentUser.username];
@@ -237,21 +250,34 @@ function handleVote(topicId, type) {
 }
 
 function deleteTopic(id) {
-    if (confirm("Supprimer ce sujet ?")) {
+    if (confirm("Supprimer ?")) {
         saveTopics(getStoredTopics().filter(t => t.id !== id));
-        updateTagFilter();
         showView('view-home');
     }
 }
 
 function deleteMessage(index) {
-    if (confirm("Supprimer ce message ?")) {
-        const topics = getStoredTopics();
-        const t = topics.find(topic => topic.id === currentTopicId);
-        t.messages.splice(index, 1);
-        saveTopics(topics);
-        renderMessages(t);
-    }
+    const topics = getStoredTopics();
+    const t = topics.find(topic => topic.id === currentTopicId);
+    t.messages.splice(index, 1);
+    saveTopics(topics);
+    renderMessages(t);
+}
+
+function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    document.getElementById('toast-container').appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function setTopicState(id, state) {
+    const topics = getStoredTopics();
+    const idx = topics.findIndex(t => t.id === id);
+    topics[idx].state = state;
+    saveTopics(topics);
+    viewTopicDetail(id);
 }
 
 function editTopic(id) {
@@ -263,16 +289,8 @@ function editTopic(id) {
     showView('view-edit-topic');
 }
 
-function showToast(msg) {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = msg;
-    document.getElementById('toast-container').appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
-
 // ==========================================
-// 2. LISTENERS ET INITIALISATION
+// 2. INITIALISATION
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -282,50 +300,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('user-welcome').textContent = `Salut, ${user.username}`;
     if (user.role === 'admin') document.getElementById('btn-admin-dashboard').classList.remove('hidden');
 
-    window.renderTopics = () => {
-        let topics = getVisibleTopics();
-        const q = document.getElementById('search-input').value.toLowerCase();
-        const tagFilter = document.getElementById('filter-tag').value;
-        const sort = document.getElementById('sort-order').value;
-
-        topics = topics.filter(t => t.title.toLowerCase().includes(q) || (t.tag && t.tag.toLowerCase().includes(q)));
-        if (tagFilter) {
-            topics = topics.filter(t => t.tag && t.tag.split(',').map(s => s.trim()).includes(tagFilter));
-        }
-        
-        if (sort === 'newest') topics.sort((a, b) => new Date(b.date) - new Date(a.date));
-        if (sort === 'popular') topics.sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
-
-        document.getElementById('topics-list').innerHTML = topics.map(t => `
-            <div class="topic-item" onclick="viewTopicDetail(${t.id})">
-                <div class="topic-info">
-                    <h3>${t.title}</h3>
-                    <p>Par ${t.author} • ${new Date(t.date).toLocaleDateString()}</p>
-                </div>
-                <div class="topic-meta">
-                    <span class="tag">${t.tag || 'Général'}</span>
-                    <span class="state-badge ${t.state}">${t.state}</span>
-                    <span>👍 ${t.likes}</span>
-                    <span>👎 ${t.dislikes}</span>
-                </div>
-            </div>
-        `).join('');
-    };
-
-    window.renderAdmin = () => {
-        document.getElementById('admin-topics-list').innerHTML = getVisibleTopics().map(t => `
-            <div class="admin-row"><span>${t.title}</span><button onclick="deleteTopic(${t.id})" class="btn-delete">Supprimer</button></div>
-        `).join('');
-    };
-
     document.getElementById('btn-logout').onclick = () => { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; };
     document.getElementById('btn-create-topic-nav').onclick = () => showView('view-create-topic');
     document.getElementById('btn-admin-dashboard').onclick = () => showView('view-admin');
     document.querySelectorAll('.btn-cancel').forEach(b => b.onclick = () => showView('view-home'));
     
-    ['search-input', 'filter-tag', 'sort-order'].forEach(id => {
+    // Listeners pour filtres et PAGINATION
+    ['search-input', 'filter-tag', 'sort-order', 'page-size'].forEach(id => {
         const el = document.getElementById(id);
-        if(el) el.oninput = el.onchange = renderTopics;
+        if(el) {
+            el.oninput = () => renderTopics();
+            el.onchange = () => renderTopics();
+        }
     });
 
     document.getElementById('create-topic-form').onsubmit = (e) => {
@@ -344,22 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         saveTopics(topics);
         e.target.reset();
-        updateTagFilter();
         showView('view-home');
-        showToast("Sujet créé !");
-    };
-
-    document.getElementById('edit-topic-form').onsubmit = (e) => {
-        e.preventDefault();
-        const id = parseInt(e.target.dataset.topicId);
-        const topics = getStoredTopics();
-        const idx = topics.findIndex(t => t.id === id);
-        topics[idx].title = document.getElementById('edit-topic-title').value;
-        topics[idx].body = document.getElementById('edit-topic-body').value;
-        topics[idx].tag = document.getElementById('edit-topic-tags').value;
-        saveTopics(topics);
-        updateTagFilter();
-        viewTopicDetail(id);
     };
 
     document.getElementById('add-message-form').onsubmit = (e) => {
