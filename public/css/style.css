@@ -108,6 +108,19 @@ button:hover { filter: brightness(1.05); transform: translateY(-1px); }
     white-space: nowrap;
 }
 
+.btn-delete-message {
+    background-color: var(--btn-delete-bg);
+    color: var(--btn-delete-text);
+    padding: 5px 10px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+.btn-delete-message:hover {
+    filter: brightness(0.9);
+}
+
 .btn-cancel {
     background: transparent;
     color: var(--text-main);
@@ -286,7 +299,14 @@ input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px 
     border: 1px solid var(--border);
 }
 
-.message-meta { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px; }
+.message-meta { 
+    color: var(--text-muted); 
+    font-size: 0.85rem; 
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
 /* --- RESPONSIVE --- */
 @media (max-width: 600px) {

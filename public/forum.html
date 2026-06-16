@@ -70,6 +70,19 @@
             </form>
         </section>
 
+        <section id="view-edit-topic" class="hidden">
+            <h2>Modifier le sujet</h2>
+            <form id="edit-topic-form">
+                <input type="text" id="edit-topic-title" placeholder="Titre du sujet" required>
+                <textarea id="edit-topic-body" placeholder="Description détaillée..." required></textarea>
+                <input type="text" id="edit-topic-tags" placeholder="Tags (séparés par des virgules)">
+                <div class="form-buttons">
+                    <button type="submit" class="btn-accent">Enregistrer</button>
+                    <button type="button" class="btn-cancel">Annuler</button>
+                </div>
+            </form>
+        </section>
+
         <section id="view-topic-detail" class="hidden">
             <button class="btn-cancel">← Retour</button>
             <div id="topic-detail-content"></div>
