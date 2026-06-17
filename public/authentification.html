@@ -39,13 +39,16 @@
             <form id="register-form">
                 <input type="text" id="reg-username" placeholder="Pseudo (lettres et chiffres)" required pattern="^[a-zA-Z0-9]+$">
                 <input type="email" id="reg-email" placeholder="Adresse mail" required>
-                <input type="password" id="reg-password" placeholder="Mot de passe" required>
+                <div class="password-field">
+                    <input type="password" id="reg-password" placeholder="Mot de passe" required>
+                    <button type="button" id="toggle-reg-password" aria-label="Afficher ou masquer le mot de passe">👁️</button>
+                </div>
                 <small>8+ caractères, 1 majuscule, 1 caractère spécial.</small>
                 <button type="submit">Créer mon compte</button>
             </form>
             <p>Déjà inscrit ? <a href="#" id="show-login">Se connecter</a></p>
         </section>
     </div>
-    <script src="js/auth.js"></script>
+    <script src="js/authentification.js"></script>
 </body>
 </html>

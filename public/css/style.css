@@ -293,19 +293,44 @@ input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px 
 /* --- MESSAGES --- */
 .message {
     background-color: var(--bg-body);
-    padding: 15px 20px;
+    padding: 20px;
     margin: 15px 0;
     border-radius: 12px;
     border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column; /* Empile le texte puis les metas */
+    gap: 15px;
+    position: relative;
+}
+
+.message p {
+    margin: 0;
+    width: 100%;
+    word-wrap: break-word;
 }
 
 .message-meta { 
     color: var(--text-muted); 
     font-size: 0.85rem; 
-    margin-bottom: 10px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    margin-top: auto; /* Pousse vers le bas si le container est grand */
+    width: 100%;
+    gap: 10px;
+}
+
+/* S'assurer que le nom en gras ressort bien */
+.message-meta strong {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+/* Actions (boutons) à côté de la date */
+.msg-actions {
+    display: flex;
+    gap: 5px;
+    margin-left: 10px;
 }
 
 /* --- RESPONSIVE --- */

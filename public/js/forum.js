@@ -177,7 +177,7 @@ function viewTopicDetail(id) {
         </div>
         <div class="message main-post">
             <p>${topic.body}</p>
-            <div class="message-meta">Posté par <strong>${topic.author}</strong></div>
+            <div class="message-meta">Posté par <strong>${topic.author}</strong> le ${new Date(topic.date).toLocaleDateString()}</div>
         </div>
         <div class="votes">
             <button onclick="handleVote(${topic.id}, 'like')" class="btn-vote">👍 Like (${topic.likes})</button>
@@ -214,11 +214,11 @@ function renderMessages(topic) {
 
             return `
                 <div class="message">
+                    <p>${m.body}</p>               
                     <div class="message-meta">
-                        <strong>${m.author}</strong>
+                        Posté par <strong>${m.author}</strong> le ${new Date(m.date).toLocaleDateString()}
                         <div class="msg-actions">${banBtn} ${deleteBtn}</div>
                     </div>
-                    <p>${m.body}</p>
                 </div>
             `;
         }).join('');
