@@ -295,12 +295,12 @@ function editTopic(id) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const user = getCurrentUser();
-    if (!user) return window.location.href = 'index.html';
+    if (!user) return window.location.href = 'authentification.html';
     
     document.getElementById('user-welcome').textContent = `Salut, ${user.username}`;
     if (user.role === 'admin') document.getElementById('btn-admin-dashboard').classList.remove('hidden');
 
-    document.getElementById('btn-logout').onclick = () => { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; };
+    document.getElementById('btn-logout').onclick = () => { localStorage.removeItem('currentUser'); window.location.href = 'authentification.html'; };
     document.getElementById('btn-create-topic-nav').onclick = () => showView('view-create-topic');
     document.getElementById('btn-admin-dashboard').onclick = () => showView('view-admin');
     document.querySelectorAll('.btn-cancel').forEach(b => b.onclick = () => showView('view-home'));
