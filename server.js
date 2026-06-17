@@ -44,7 +44,7 @@ app.get('/api/health', (req, res) => {
 
 // Serve frontend
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'authentification.html'));
 });
 
 app.get('/forum', (req, res) => {
