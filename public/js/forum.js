@@ -18,10 +18,13 @@ function showView(viewId) {
     document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
     const target = document.getElementById(viewId);
     if (target) target.classList.remove('hidden');
-    if (viewId === 'view-home') { updateTagFilter(); renderTopics(); }
+    if (viewId === 'view-home') { 
+        updateTagFilter(); 
+        renderTopics(); 
+    }
 }
 
-// --- GESTION DU THÈME (Même logique que l'auth) ---
+// --- THÈME PERSISTANT ---
 function initTheme() {
     const btn = document.getElementById('theme-toggle');
     const apply = (t) => {
@@ -57,7 +60,7 @@ async function updateTagFilter() {
     }
 }
 
-// --- RENDU LISTE TOPICS ---
+// --- LISTE TOPICS ---
 async function renderTopics() {
     const search = document.getElementById('search-input').value;
     const sort = document.getElementById('sort-order').value;
@@ -82,7 +85,7 @@ async function renderTopics() {
     }
 }
 
-// --- DETAIL TOPIC ---
+// --- VUE DETAIL ---
 async function viewTopicDetail(id) {
     const data = await apiCall(`${SERVER_URL}/api/topics/${id}`);
     if (!data.success) return;
@@ -102,7 +105,7 @@ async function viewTopicDetail(id) {
                     <button onclick="updateTopicState('ferme')" class="btn-cancel">Fermer</button>
                     <button onclick="updateTopicState('archive')" class="btn-delete">Archiver</button>
                     <button onclick="setupEdit()" class="btn-accent">✏️ Modifier</button>
-                    <button onclick="deleteTopic(${t.id})" class="btn-delete">🗑️ Supprimer</button>
+                    <button onclick="deleteTopic(${t.id})" class="btn-delete">🗑️ Supprimer Sujet</button>
                 </div>
             ` : ''}
         </div>
@@ -114,43 +117,51 @@ async function viewTopicDetail(id) {
         <div class="msg-header">
             <h3>Réponses</h3>
             <div class="msg-filters">
-                <select id="msg-sort" onchange="renderMessages(${id}, '${t.state}')">
+                <select id="msg-sort" onchange="renderMessages(${id}, ${t.author_id}, '${t.state}')">
                     <option value="recent">Plus récent</option>
                     <option value="oldest">Plus ancien</option>
                     <option value="popular">Plus populaire</option>
                 </select>
-                <select id="msg-limit" onchange="renderMessages(${id}, '${t.state}')">
+                <select id="msg-limit" onchange="renderMessages(${id}, ${t.author_id}, '${t.state}')">
                     <option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="all">Tout</option>
                 </select>
             </div>
         </div>
         <div id="messages-list"></div>
     `;
-    renderMessages(id, t.state);
+    renderMessages(id, t.author_id, t.state);
     showView('view-topic-detail');
 }
 
-async function renderMessages(topicId, topicState) {
+async function renderMessages(topicId, topicOwnerId, topicState) {
     const sort = document.getElementById('msg-sort').value;
     const limit = document.getElementById('msg-limit').value;
     const data = await apiCall(`${SERVER_URL}/api/messages?topicId=${topicId}&sort=${sort}&limit=${limit}`);
+    
     const list = document.getElementById('messages-list');
     const uid = localStorage.getItem('userId');
+    const userRole = localStorage.getItem('userRole');
 
     if (data.success) {
-        list.innerHTML = data.messages.length === 0 ? '<p>Aucune réponse.</p>' : data.messages.map(m => `
-            <div class="message">
-                <p>${m.body}</p>               
-                <div class="message-meta">
-                    Posté par <strong>${m.username}</strong> le ${new Date(m.created_at).toLocaleDateString()}
-                    <div class="msg-actions">
-                        <button onclick="vote(${m.id}, 'like')" class="btn-vote">👍 ${m.likes || 0}</button>
-                        <button onclick="vote(${m.id}, 'dislike')" class="btn-vote">👎 ${m.dislikes || 0}</button>
-                        ${uid == m.author_id ? `<button onclick="deleteMsg(${m.id})" class="btn-delete-message">🗑️</button>` : ''}
+        list.innerHTML = data.messages.length === 0 ? '<p>Aucune réponse.</p>' : data.messages.map(m => {
+            const isTopicOwner = (uid == topicOwnerId);
+            const isMsgAuthor = (uid == m.author_id);
+            const isAdmin = (userRole === 'admin');
+
+            return `
+                <div class="message">
+                    <p>${m.body}</p>               
+                    <div class="message-meta">
+                        Posté par <strong>${m.username}</strong> le ${new Date(m.created_at).toLocaleDateString()}
+                        <div class="msg-actions">
+                            <button onclick="vote(${m.id}, 'like')" class="btn-vote">👍 ${m.likes || 0}</button>
+                            <button onclick="vote(${m.id}, 'dislike')" class="btn-vote">👎 ${m.dislikes || 0}</button>
+                            ${(isMsgAuthor || isTopicOwner || isAdmin) ? `<button onclick="deleteMsg(${m.id})" class="btn-delete-message">🗑️</button>` : ''}
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
     const form = document.getElementById('add-message-form');
     if(form) form.style.display = (topicState === 'ouvert') ? 'block' : 'none';
@@ -171,27 +182,31 @@ async function setupEdit() {
 async function vote(mId, type) { 
     await apiCall(`${SERVER_URL}/api/messages/vote`, 'POST', { messageId: mId, voteType: type });
     const res = await apiCall(`${SERVER_URL}/api/topics/${currentTopicId}`);
-    renderMessages(currentTopicId, res.topic.state);
+    renderMessages(currentTopicId, res.topic.author_id, res.topic.state);
 }
 
 async function deleteTopic(id) { if(confirm("Supprimer ?")) { await apiCall(`${SERVER_URL}/api/topics/${id}`, 'DELETE'); showView('view-home'); } }
-async function deleteMsg(id) { if(confirm("Supprimer ?")) { await apiCall(`${SERVER_URL}/api/messages/${id}`, 'DELETE'); const res = await apiCall(`${SERVER_URL}/api/topics/${currentTopicId}`); renderMessages(currentTopicId, res.topic.state); } }
+async function deleteMsg(id) { 
+    if(confirm("Supprimer ce message ?")) { 
+        await apiCall(`${SERVER_URL}/api/messages/${id}`, 'DELETE'); 
+        const res = await apiCall(`${SERVER_URL}/api/topics/${currentTopicId}`);
+        renderMessages(currentTopicId, res.topic.author_id, res.topic.state);
+    } 
+}
 
 // --- INITIALISATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme(); // Charge le thème et l'applique
+    initTheme();
     updateTagFilter();
 
     const user = localStorage.getItem('username');
     if (!user) { window.location.href = '/'; return; }
     document.getElementById('user-welcome').textContent = `Salut, ${user}`;
 
-    // DÉCONNEXION (MODIFIÉE POUR GARDER LE THÈME)
     const btnLogout = document.getElementById('btn-logout');
     if (btnLogout) {
         btnLogout.onclick = async () => {
             await apiCall(`${SERVER_URL}/api/auth/logout`, 'POST');
-            // On ne fait pas localStorage.clear() !
             localStorage.removeItem('username');
             localStorage.removeItem('userId');
             localStorage.removeItem('userRole');
@@ -224,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await apiCall(`${SERVER_URL}/api/messages`, 'POST', { topicId: currentTopicId, body: document.getElementById('msg-body').value });
         document.getElementById('msg-body').value = '';
         const res = await apiCall(`${SERVER_URL}/api/topics/${currentTopicId}`);
-        renderMessages(currentTopicId, res.topic.state);
+        renderMessages(currentTopicId, res.topic.author_id, res.topic.state);
     };
 
     document.getElementById('btn-create-topic-nav').onclick = () => showView('view-create-topic');
