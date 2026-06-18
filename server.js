@@ -34,8 +34,7 @@ app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/topics', require('./src/routes/topics'));
 app.use('/api/messages', require('./src/routes/messages'));
 app.use('/api/users', require('./src/routes/users'));
-app.use('/api/admin', require('./src/routes/admin'));
-app.use('/api/friends', require('./src/routes/friends'));
+
 
 // Health check
 app.get('/api/health', (req, res) => {
