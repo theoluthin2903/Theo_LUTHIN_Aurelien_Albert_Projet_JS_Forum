@@ -1,46 +1,74 @@
 const SERVER_URL = "http://localhost:3000";
 
-document.addEventListener('DOMContentLoaded', () => {
-    const themeToggle = document.getElementById('theme-toggle');
-    const applyTheme = (t) => {
+// --- GESTION DU THÈME PARTAGÉE ---
+function initTheme() {
+    const btn = document.getElementById('theme-toggle');
+    const apply = (t) => {
         document.documentElement.setAttribute('data-theme', t);
         localStorage.setItem('theme', t);
-        if (themeToggle) themeToggle.textContent = (t === 'dark') ? '☀️' : '🌙';
+        if (btn) btn.textContent = (t === 'dark') ? '☀️' : '🌙';
     };
-    applyTheme(localStorage.getItem('theme') || 'light');
-    if (themeToggle) themeToggle.onclick = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    // Charge le thème sauvegardé ou 'light' par défaut
+    apply(localStorage.getItem('theme') || 'light');
+    if (btn) {
+        btn.onclick = () => {
+            const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            apply(next);
+        };
+    }
+}
 
-    // Visibilité MDP
-    const setupPass = (id, btn) => {
-        const i = document.getElementById(id), b = document.getElementById(btn);
-        if(i && b) b.onclick = () => { const h = i.type === 'password'; i.type = h ? 'text' : 'password'; b.textContent = h ? '🙈' : '👁️'; };
-    };
-    setupPass('login-pass', 'toggle-password-visibility');
-    setupPass('reg-password', 'toggle-reg-password');
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
 
-    // Navigation
-    document.getElementById('show-register').onclick = () => { document.getElementById('login-box').classList.add('hidden'); document.getElementById('register-box').classList.remove('hidden'); };
-    document.getElementById('show-login').onclick = () => { document.getElementById('register-box').classList.add('hidden'); document.getElementById('login-box').classList.remove('hidden'); };
+    const loginBox = document.getElementById('login-box');
+    const registerBox = document.getElementById('register-box');
+    const showRegisterLink = document.getElementById('show-register');
+    const showLoginLink = document.getElementById('show-login');
 
-    // Login
+    if(showRegisterLink) showRegisterLink.onclick = (e) => { e.preventDefault(); loginBox.classList.add('hidden'); registerBox.classList.remove('hidden'); };
+    if(showLoginLink) showLoginLink.onclick = (e) => { e.preventDefault(); registerBox.classList.add('hidden'); loginBox.classList.remove('hidden'); };
+
+    // Toggle Visibilité MDP
+    function setupPasswordToggle(inputId, buttonId) {
+        const input = document.getElementById(inputId);
+        const btn = document.getElementById(buttonId);
+        if (input && btn) {
+            btn.onclick = () => {
+                const isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+                btn.textContent = isHidden ? '🙈' : '👁️';
+            };
+        }
+    }
+    setupPasswordToggle('login-pass', 'toggle-password-visibility');
+    setupPasswordToggle('reg-password', 'toggle-reg-password');
+
+    // Connexion
     document.getElementById('login-form').onsubmit = async (e) => {
         e.preventDefault();
-        const res = await fetch(`${SERVER_URL}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier: document.getElementById('login-id').value, password: document.getElementById('login-pass').value }),
-            credentials: 'include'
-        });
-        const data = await res.json();
-        if (data.success) {
-            localStorage.setItem('username', data.user.username);
-            localStorage.setItem('userId', data.user.id);
-            localStorage.setItem('userRole', data.user.role);
-            window.location.href = '/forum';
-        } else alert(data.message);
+        const identifier = document.getElementById('login-id').value;
+        const password = document.getElementById('login-pass').value;
+
+        try {
+            const res = await fetch(`${SERVER_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier, password }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                // On sauvegarde les infos user SANS écraser le thème
+                localStorage.setItem('username', data.user.username);
+                localStorage.setItem('userId', data.user.id);
+                localStorage.setItem('userRole', data.user.role);
+                window.location.href = '/forum';
+            } else { alert(data.message); }
+        } catch (err) { alert("Serveur injoignable"); }
     };
 
-    // Register
+    // Inscription
     document.getElementById('register-form').onsubmit = async (e) => {
         e.preventDefault();
         const res = await fetch(`${SERVER_URL}/api/auth/register`, {
@@ -53,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         });
         const data = await res.json();
-        if (data.success) { alert("Succès ! Connectez-vous."); document.getElementById('show-login').click(); }
+        if (data.success) { alert("Succès ! Connectez-vous."); showLoginLink.click(); }
         else alert(data.message);
     };
-});s
+});

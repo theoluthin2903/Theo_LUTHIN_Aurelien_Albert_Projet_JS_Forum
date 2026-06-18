@@ -26,20 +26,6 @@ Une application de forum moderne et intuitive développée en **Node.js/Express*
 - **Système de pagination** (10, 20, 30, ou tous les éléments)
 - **Suppression** par le créateur du message, le propriétaire du topic, ou admin
 
-### ✅ Profils Utilisateurs (FTB-2)
-- **Afficher le profil** avec : username, bio, photo, dernière connexion, nombre de messages, nombre de topics
-- **Modifier son profil** (bio, photo)
-
-### ✅ Système d'Amis (FTB-3)
-- **Envoyer/accepter/rejeter** des demandes d'ami
-- **Topics privés** accessibles uniquement aux amis
-
-### ✅ Dashboard Admin (FT-11)
-- **Modifier l'état** d'un topic
-- **Supprimer** topics et messages
-- **Bannir** les utilisateurs
-- **Voir les statistiques** et l'historique des actions
-
 ## 📁 Structure du Projet
 
 ```
@@ -232,11 +218,8 @@ Utilisateur:
 ✅ FT-8: Tri des messages (récent/populaire)
 ✅ FT-9: Pagination des topics et messages (10, 20, 30, tous)
 ✅ FT-10: Filtrage par tags/catégories
-✅ FT-11: Dashboard administrateur
 ✅ FT-12: Recherche par titre
-✅ FTB-2: Profils utilisateurs modifiables
-✅ FTB-3: Système d'amis avec topics privés
-✅ Images: Support des images dans les messages (uploaded paths)
+
 
 ## 🔐 Sécurité
 
