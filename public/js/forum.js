@@ -74,7 +74,7 @@ async function renderTopics() {
             <div class="topic-item" onclick="viewTopicDetail(${t.id})">
                 <div class="topic-info">
                     <h3>${t.title}</h3>
-                    <p>Par <strong>${t.author_name}</strong> • ${new Date(t.created_at).toLocaleDateString()}</p>
+                    <p>Par <strong>${t.author_name}</strong> • ${new Date(t.created_at).toLocaleDateString()} à ${new Date(t.created_at).toLocaleTimeString()}</p>
                 </div>
                 <div class="topic-meta">
                     <span class="tag">${t.tags || 'Général'}</span>
@@ -111,7 +111,7 @@ async function viewTopicDetail(id) {
         </div>
         <div class="message main-post">
             <p>${t.body}</p>
-            <div class="message-meta">Posté par <strong>${t.author_name}</strong> le ${new Date(t.created_at).toLocaleDateString()}</div>
+            <div class="message-meta">Posté par <strong>${t.author_name}</strong> le ${new Date(t.created_at).toLocaleDateString()} à ${new Date(t.created_at).toLocaleTimeString()}</div>
         </div>
         <hr>
         <div class="msg-header">
@@ -152,7 +152,7 @@ async function renderMessages(topicId, topicOwnerId, topicState) {
                 <div class="message">
                     <p>${m.body}</p>               
                     <div class="message-meta">
-                        Posté par <strong>${m.username}</strong> le ${new Date(m.created_at).toLocaleDateString()}
+                        Posté par <strong>${m.username}</strong> le ${new Date(m.created_at).toLocaleDateString()} à ${new Date(m.created_at).toLocaleTimeString()} 
                         <div class="msg-actions">
                             <button onclick="vote(${m.id}, 'like')" class="btn-vote">👍 ${m.likes || 0}</button>
                             <button onclick="vote(${m.id}, 'dislike')" class="btn-vote">👎 ${m.dislikes || 0}</button>
