@@ -84,23 +84,20 @@ npm install
 
 ### 4. Configurer la base de données MySQL
 
-#### Option A: MySQL CLI
+-installer MySQL : https://dev.mysql.com/downloads/installer/ puis 
+
 ```bash
-mysql -u root -p < database.sql
-mysql -u root -p forum_db < seed.sql
+mysql -u root -p 
+SOURCE {chemin vers le fichier databse.sql}
 ```
 
-#### Option B: MySQL Workbench ou autre GUI
-1. Créer une nouvelle base de données `forum_db`
-2. Importer `database.sql`
-3. Importer `seed.sql` (données de test)
 
 ### 5. Configurer les variables d'environnement
 Modifier le fichier `.env` :
 ```env
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=votreMotDePasse
+DB_PASSWORD=votreMotDePasse root
 DB_NAME=forum_db
 DB_PORT=3306
 PORT=3000
@@ -110,36 +107,11 @@ SESSION_SECRET=changez_ceci_en_production
 
 ### 6. Lancer le serveur
 ```bash
-npm start
-```
-
-Ou en mode développement avec auto-reload :
-```bash
-npm run dev
+node server.js
 ```
 
 ### 7. Accéder à l'application
 Ouvrir le navigateur et aller à : **http://localhost:3000/forum**
-
-## 📝 Comptes de Test
-
-```
-Admin:
-- Username: admin
-- Password: Password123!
-
-Utilisateur:
-- Username: john_doe
-- Password: Password123!
-
-Utilisateur:
-- Username: jane_smith
-- Password: Password123!
-
-Utilisateur:
-- Username: bob_wilson
-- Password: Password123!
-```
 
 ## 📡 Routes API
 
