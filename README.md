@@ -46,15 +46,11 @@ Une application de forum moderne et intuitive développée en **Node.js/Express*
 │   │   ├── topicCtrl.js              # Contrôleurs des topics
 │   │   ├── messageCtrl.js            # Contrôleurs des messages
 │   │   ├── userCtrl.js               # Contrôleurs des utilisateurs
-│   │   ├── friendCtrl.js             # Contrôleurs des amis
-│   │   └── adminCtrl.js              # Contrôleurs admin
 │   ├── routes/
 │   │   ├── auth.js                   # Routes d'authentification
 │   │   ├── topics.js                 # Routes des topics
 │   │   ├── messages.js               # Routes des messages
 │   │   ├── users.js                  # Routes des utilisateurs
-│   │   ├── friends.js                # Routes des amis
-│   │   └── admin.js                  # Routes admin
 │   └── middleware/
 │       └── auth.js                   # Middleware d'authentification
 ├── server.js                         # Serveur Express
@@ -166,19 +162,7 @@ Utilisateur:
 - `POST /api/messages/vote` - Like/Dislike un message
 - `DELETE /api/messages/:id` - Supprimer un message
 
-### Utilisateurs
-- `GET /api/users/:userId` - Profil d'un utilisateur
-- `PUT /api/users/profile` - Modifier son profil
-
-### Amis
-- `POST /api/friends/request` - Envoyer une demande d'ami
-- `POST /api/friends/accept` - Accepter une demande
-- `POST /api/friends/reject` - Refuser une demande
-- `GET /api/friends/list` - Lister ses amis
-- `GET /api/friends/requests/pending` - Demandes en attente
-
-### Admin
-- `POST /api/admin/ban-user` - Bannir un utilisateur
+### Modification
 - `PUT /api/admin/topic-state` - Modifier l'état d'un topic
 - `DELETE /api/admin/topic` - Supprimer un topic
 - `DELETE /api/admin/message` - Supprimer un message
@@ -194,9 +178,6 @@ Utilisateur:
 - `votes`: Like/Dislike sur les messages
 - `tags`: Catégories
 - `topic_tags`: Junction pour topics ↔ tags
-- `friends`: Système d'amis
-- `admin_actions`: Historique des actions admin
-- `bans`: Historique des bans
 
 ## 🛠️ Technologies
 
