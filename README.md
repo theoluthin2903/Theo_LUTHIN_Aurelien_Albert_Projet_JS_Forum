@@ -1,4 +1,4 @@
-# Ynov Forum - Application Web de Discussion
+# Ynov ForUm - Application Web de Discussion
 
 Une application de forum moderne et intuitive développée en **Node.js/Express** avec **HTML/CSS/JavaScript vanilla** et **MySQL**. 
 
@@ -73,8 +73,8 @@ Téléchargez Node.js depuis [https://nodejs.org/](https://nodejs.org/) et insta
 
 ### 2. Cloner/Télécharger le projet
 ```bash
-git clone https://github.com/theoluthin2903/Theo_LUTHIN_Aurelien_Albert_Projet_JS_Forum
-cd Theo_LUTHIN_Aurelien_Albert_Projet_JS_Forum
+git clone https://github.com/theoluthin2903/Theo_LUTHIN_Aurelien_Albert_Projet_JS_ForUm
+cd Theo_LUTHIN_Aurelien_Albert_Projet_JS_ForUm
 ```
 
 ### 3. Installer les dépendances
