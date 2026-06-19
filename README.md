@@ -88,7 +88,7 @@ npm install
 
 ```bash
 mysql -u root -p 
-SOURCE {chemin vers le fichier databse.sql}
+SOURCE {chemin vers le fichier databse.sql(Ex : C:/Users/theol/Documents/JavaScript/Theo_LUTHIN_Aurelien_Albert_Projet_JS_ForUm/database.sql)}
 ```
 
 
