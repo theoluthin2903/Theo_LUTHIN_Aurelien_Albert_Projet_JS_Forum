@@ -166,7 +166,6 @@ Utilisateur:
 - `PUT /api/admin/topic-state` - Modifier l'état d'un topic
 - `DELETE /api/admin/topic` - Supprimer un topic
 - `DELETE /api/admin/message` - Supprimer un message
-- `GET /api/admin/stats` - Statistiques du dashboard
 - `GET /api/admin/users` - Lister tous les utilisateurs
 
 ## 🗄️ Schéma de la Base de Données
